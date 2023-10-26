@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+
+  liquibase:
+    image: liquibase/liquibase
+    depends_on:
+      - pgdb
+    #command: --url=jdbc:postgresql://pgdb:5432/${POSTGRES_DB}?currentSchema=public&user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD} --changelog-file=/liquibase/changelog/changelog.xml update
+    command: --url=jdbc:postgresql://pgdb/${POSTGRES_DB} --username=${POSTGRES_USER} --password=${POSTGRES_PASSWORD} --changelog-file=changelog.xml update
+    volumes:
+      - ./config/changelog.xml:/liquibase/changelog/changelog.xml
+      - ./:/liquibase/changelog
+      - ./sql:/liquibase/scripts
+    networks:
+      - lbnet
+
+  pgdb:
+    image: postgres:11
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    user: root
+    ports:
+      - "5432:5432"
+    networks:
+      - lbnet
+
+  pg-admin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - "PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}"
+      - "PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}"
+    ports:
+      - "8080:80"
+    networks:
+      - lbnet
+    depends_on:
+      - pgdb
+
+networks:
+  lbnet:
