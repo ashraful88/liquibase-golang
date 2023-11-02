@@ -6,12 +6,13 @@ services:
     image: liquibase/liquibase
     depends_on:
       - pgdb
-    #command: --url=jdbc:postgresql://pgdb:5432/${POSTGRES_DB}?currentSchema=public&user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD} --changelog-file=/liquibase/changelog/changelog.xml update
+    entrypoint: liquibase
+    environment:
+      - LIQUIBASE_COMMAND_CHANGELOG_FILE=changelog.xml
     command: --url=jdbc:postgresql://pgdb/${POSTGRES_DB} --username=${POSTGRES_USER} --password=${POSTGRES_PASSWORD} --changelog-file=changelog.xml update
     volumes:
-      - ./config/changelog.xml:/liquibase/changelog/changelog.xml
-      - ./:/liquibase/changelog
-      - ./sql:/liquibase/scripts
+      - ./scripts:/liquibase/scripts
+      - ./changelog.xml:/liquibase/changelog.xml
     networks:
       - lbnet
 
